@@ -80,9 +80,9 @@ public class IHMDemineur extends JPanel implements ActionListener {
         tabCases = new Case[n][n];
         grid.setLayout(new GridLayout(n, n));
 
-        for(int i = 0; i < n; i++){
-            for(int j = 0; j < n; j++){
-                tabCases[i][j] = new Case(i, j, demineur, compteur);
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                tabCases[i][j] = new Case(i, j, demineur, compteur, tabCases);
                 grid.add(tabCases[i][j]);
             }
         }
@@ -99,12 +99,13 @@ public class IHMDemineur extends JPanel implements ActionListener {
         return header;
     }
 
-    private void newPartie() {
+    void newPartie() {
         for (int i = 0; i < demineur.getChamp().getBoard().length; i++) {
             for (int j = 0; j < demineur.getChamp().getBoard().length; j++) {
                 tabCases[i][j].newPartie();
             }
         }
+        compteur.reset();
     }
 
     private void newPartie(Level level) {
@@ -118,7 +119,7 @@ public class IHMDemineur extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent event) {
         if (event.getSource() == mQuitter) {
-            if(JOptionPane.showConfirmDialog(
+            if (JOptionPane.showConfirmDialog(
                     null,
                     "Are you sure?",
                     "Quit",
@@ -148,5 +149,18 @@ public class IHMDemineur extends JPanel implements ActionListener {
         if (event.getSource() == grid) {
             compteur.start();
         }
+    }
+
+    void setLose() {
+        for (Case[] tabCase : tabCases) {
+            for (int j = 0; j < tabCases.length; j++) {
+                tabCase[j].setEnabled(false);
+                compteur.stop();
+            }
+        }
+    }
+
+    public Compteur getCompteur() {
+        return compteur;
     }
 }

@@ -18,34 +18,41 @@ public class Case extends JPanel implements MouseListener {
     private Demineur demineur;
     private boolean clicked = false;
     private Compteur compteur;
+    private boolean enabled;
+    private Case[][] tabCases;
 
-    Case(int x, int y, Demineur demineur, Compteur compteur) {
+    Case(int x, int y, Demineur demineur, Compteur compteur, Case[][] tabCases) {
         setPreferredSize(new Dimension(DIM, DIM));
         addMouseListener(this);
         setBackground(Color.lightGray);
         this.demineur = demineur;
         this.compteur = compteur;
+        this.enabled = true;
+        this.tabCases = tabCases;
         this.x = x;
         this.y = y;
     }
 
     @Override
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    @Override
     public void paintComponent(Graphics gc) {
         super.paintComponent(gc);
-        if(!clicked) {
+        if (!clicked) {
             gc.setColor(new Color(138, 158, 158));
             gc.fillRect(1, 1, getWidth(), getHeight());
-        }
-        else {
-            if(demineur.getChamp().display(x, y).equals("Mine")) {
+        } else {
+            if (demineur.getChamp().display(x, y).equals("Mine")) {
                 try {
-                    BufferedImage image= ImageIO.read(new File("img/bomb.png"));
+                    BufferedImage image = ImageIO.read(new File("img/bomb.png"));
                     gc.drawImage(image, 0, 0, this.getWidth(), this.getHeight(), this);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }
-            else gc.drawString(txt, this.getHeight()/2, this.getWidth()/2);
+            } else gc.drawString(txt, this.getHeight() / 2, this.getWidth() / 2);
         }
     }
 
@@ -56,26 +63,44 @@ public class Case extends JPanel implements MouseListener {
      */
     @Override
     public void mousePressed(MouseEvent e) {
-        compteur.start();
-        txt = demineur.getChamp().display(x, y);
-        clicked = true;
-        repaint();
+        if(enabled) {
+            compteur.start();
+            txt = demineur.getChamp().display(x, y);
+            clicked = true;
+            repaint();
+            if (txt.equals("Mine")) {
+                demineur.getIhmDemineur().setLose();
+                if (JOptionPane.showConfirmDialog(
+                        null,
+                        "You lost ! Would you like to start over ?",
+                        "Defeat",
+                        JOptionPane.YES_NO_OPTION
+                ) == JOptionPane.YES_OPTION) {
+                    demineur.getIhmDemineur().newPartie();
+                }
+            }
+        }
     }
 
     @Override
-    public void mouseClicked(MouseEvent e) {}
+    public void mouseClicked(MouseEvent e) {
+    }
 
     @Override
-    public void mouseReleased(MouseEvent e) {}
+    public void mouseReleased(MouseEvent e) {
+    }
 
     @Override
-    public void mouseEntered(MouseEvent e) {}
+    public void mouseEntered(MouseEvent e) {
+    }
 
     @Override
-    public void mouseExited(MouseEvent e) {}
+    public void mouseExited(MouseEvent e) {
+    }
 
     void newPartie() {
         clicked = false;
+        enabled = true;
         repaint();
     }
 }

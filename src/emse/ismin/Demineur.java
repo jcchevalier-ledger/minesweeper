@@ -7,6 +7,7 @@ import java.awt.event.WindowEvent;
 public class Demineur extends JFrame{
 
     private Champ champ;
+    private IHMDemineur ihmDemineur;
 
     private Demineur(){
         super("Démineur");
@@ -14,7 +15,7 @@ public class Demineur extends JFrame{
         this.champ = new Champ(Level.Easy);
         champ.placeMines();
 
-        IHMDemineur ihmDemineur = new IHMDemineur(this);
+        ihmDemineur = new IHMDemineur(this);
         setContentPane(ihmDemineur);
 
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -45,5 +46,9 @@ public class Demineur extends JFrame{
     void quit() {
         System.out.println("Bye-Bye");
         System.exit(0);
+    }
+
+    IHMDemineur getIhmDemineur() {
+        return ihmDemineur;
     }
 }
