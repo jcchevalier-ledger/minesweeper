@@ -92,8 +92,13 @@ public class IHMDemineur extends JPanel implements ActionListener {
     private JPanel createHeader() {
         JPanel header = new JPanel();
         header.setLayout(new FlowLayout());
-        header.add(new JLabel("Démineur"));
-        header.add(new JLabel("Score: 100"));
+
+        JLabel title = new JLabel("Welcome on board");
+        title.setHorizontalAlignment(JLabel.CENTER);
+        header.add(title);
+
+        Compteur compteur = new Compteur();
+        header.add(compteur);
 
         return header;
     }

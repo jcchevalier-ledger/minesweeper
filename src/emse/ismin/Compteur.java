@@ -7,7 +7,7 @@ public class Compteur extends JPanel implements Runnable {
     private Thread processScores;
     private int cpt;
 
-    private Compteur() {
+    Compteur() {
         setPreferredSize(new Dimension(50, 50));
         setBackground(Color.CYAN);
         cpt = 0;
