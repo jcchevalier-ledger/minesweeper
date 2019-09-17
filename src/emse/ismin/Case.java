@@ -27,6 +27,7 @@ public class Case extends JPanel implements MouseListener {
         this.y = y;
     }
 
+    @Override
     public void paintComponent(Graphics gc) {
         super.paintComponent(gc);
         if(!clicked) {
