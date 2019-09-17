@@ -6,13 +6,20 @@ public class Compteur extends JPanel implements Runnable {
 
     private Thread processScores;
     private int cpt;
+    private boolean started = false;
 
-    Compteur() {
-        setPreferredSize(new Dimension(50, 50));
-        setBackground(Color.CYAN);
+    Compteur(int width, int height) {
+        setPreferredSize(new Dimension(width, height));
         cpt = 0;
         processScores = new Thread(this);
-        processScores.start();
+    }
+
+    void start() {
+        if (!started) {
+            processScores.start();
+            started = true;
+            System.out.println("Yesss");
+        }
     }
 
     @Override
@@ -21,6 +28,7 @@ public class Compteur extends JPanel implements Runnable {
             try {
                 Thread.sleep(1000);
                 repaint();
+                cpt += 1;
             }
             catch (InterruptedException exception){
                 exception.printStackTrace();
@@ -29,9 +37,8 @@ public class Compteur extends JPanel implements Runnable {
     }
 
     @Override
-    public void paintComponents(Graphics g) {
-        super.paintComponents(g);
-        g.drawString(String.valueOf(cpt), this.getHeight()/2, this.getWidth()/2);
-        cpt =+ 1;
+    public void paintComponent(Graphics gc) {
+        super.paintComponent(gc);
+        gc.drawString("Timer: " + cpt, this.getWidth()/2 , this.getHeight()/2);
     }
 }

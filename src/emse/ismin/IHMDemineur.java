@@ -2,10 +2,7 @@ package emse.ismin;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 
 public class IHMDemineur extends JPanel implements ActionListener {
 
@@ -20,6 +17,8 @@ public class IHMDemineur extends JPanel implements ActionListener {
     private JMenuItem mHard = new JMenuItem("Hard", KeyEvent.VK_H);
     private JMenuItem mCustom = new JMenuItem("Custom", KeyEvent.VK_H);
     private JMenuItem mRestart = new JMenuItem("Recommencer");
+    private Compteur compteur = new Compteur(150, 30);
+
 
     IHMDemineur(Demineur demineur) {
         setLayout(new BorderLayout());
@@ -31,10 +30,10 @@ public class IHMDemineur extends JPanel implements ActionListener {
         createGrid();
         add(grid, BorderLayout.CENTER);
 
-        createMenuPartie(demineur);
+        createMenuPartie();
     }
 
-    private void createMenuPartie(Demineur demineur) {
+    private void createMenuPartie() {
         JMenuBar jMenuBar = new JMenuBar();
 
         //Menu partie
@@ -83,7 +82,7 @@ public class IHMDemineur extends JPanel implements ActionListener {
 
         for(int i = 0; i < n; i++){
             for(int j = 0; j < n; j++){
-                tabCases[i][j] = new Case(i, j, demineur);
+                tabCases[i][j] = new Case(i, j, demineur, compteur);
                 grid.add(tabCases[i][j]);
             }
         }
@@ -94,10 +93,7 @@ public class IHMDemineur extends JPanel implements ActionListener {
         header.setLayout(new FlowLayout());
 
         JLabel title = new JLabel("Welcome on board");
-        title.setHorizontalAlignment(JLabel.CENTER);
         header.add(title);
-
-        Compteur compteur = new Compteur();
         header.add(compteur);
 
         return header;
@@ -148,6 +144,9 @@ public class IHMDemineur extends JPanel implements ActionListener {
         if (event.getSource() == mRestart) {
             demineur.getChamp().placeMines();
             newPartie();
+        }
+        if (event.getSource() == grid) {
+            compteur.start();
         }
     }
 }

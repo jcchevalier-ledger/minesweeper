@@ -17,12 +17,14 @@ public class Case extends JPanel implements MouseListener {
     private String txt = "";
     private Demineur demineur;
     private boolean clicked = false;
+    private Compteur compteur;
 
-    Case(int x, int y, Demineur demineur) {
+    Case(int x, int y, Demineur demineur, Compteur compteur) {
         setPreferredSize(new Dimension(DIM, DIM));
         addMouseListener(this);
         setBackground(Color.lightGray);
         this.demineur = demineur;
+        this.compteur = compteur;
         this.x = x;
         this.y = y;
     }
@@ -54,6 +56,7 @@ public class Case extends JPanel implements MouseListener {
      */
     @Override
     public void mousePressed(MouseEvent e) {
+        compteur.start();
         txt = demineur.getChamp().display(x, y);
         clicked = true;
         repaint();
