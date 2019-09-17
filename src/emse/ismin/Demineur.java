@@ -4,12 +4,13 @@ import javax.swing.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-public class Demineur extends JFrame{
+public class Demineur extends JFrame {
 
     private Champ champ;
     private IHMDemineur ihmDemineur;
+    private int discoveredCases = 0;
 
-    private Demineur(){
+    private Demineur() {
         super("Démineur");
 
         this.champ = new Champ(Level.Easy);
@@ -25,7 +26,7 @@ public class Demineur extends JFrame{
 
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent event) {
-                if(JOptionPane.showConfirmDialog(
+                if (JOptionPane.showConfirmDialog(
                         null,
                         "Are you sure?",
                         "Quit",
@@ -35,7 +36,7 @@ public class Demineur extends JFrame{
         });
     }
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         new Demineur();
     }
 
@@ -50,5 +51,13 @@ public class Demineur extends JFrame{
 
     IHMDemineur getIhmDemineur() {
         return ihmDemineur;
+    }
+
+    int getDiscoveredCases() {
+        return discoveredCases;
+    }
+
+    void setDiscoveredCases(int discoveredCases) {
+        this.discoveredCases = discoveredCases;
     }
 }

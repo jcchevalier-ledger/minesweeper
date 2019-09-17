@@ -2,7 +2,10 @@ package emse.ismin;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 
 public class IHMDemineur extends JPanel implements ActionListener {
 
@@ -82,7 +85,7 @@ public class IHMDemineur extends JPanel implements ActionListener {
 
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                tabCases[i][j] = new Case(i, j, demineur, compteur, tabCases);
+                tabCases[i][j] = new Case(i, j, demineur, compteur);
                 grid.add(tabCases[i][j]);
             }
         }
@@ -100,12 +103,14 @@ public class IHMDemineur extends JPanel implements ActionListener {
     }
 
     void newPartie() {
+        //demineur.getChamp().placeMines();
         for (int i = 0; i < demineur.getChamp().getBoard().length; i++) {
             for (int j = 0; j < demineur.getChamp().getBoard().length; j++) {
                 tabCases[i][j].newPartie();
             }
         }
         compteur.reset();
+        demineur.setDiscoveredCases(0);
     }
 
     private void newPartie(Level level) {
@@ -143,7 +148,6 @@ public class IHMDemineur extends JPanel implements ActionListener {
             newPartie();
         }*/
         if (event.getSource() == mRestart) {
-            demineur.getChamp().placeMines();
             newPartie();
         }
         if (event.getSource() == grid) {
@@ -151,7 +155,7 @@ public class IHMDemineur extends JPanel implements ActionListener {
         }
     }
 
-    void setLose() {
+    void blockGame() {
         for (Case[] tabCase : tabCases) {
             for (int j = 0; j < tabCases.length; j++) {
                 tabCase[j].setEnabled(false);

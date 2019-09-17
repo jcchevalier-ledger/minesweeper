@@ -1,5 +1,6 @@
 package emse.ismin;
-import javax.swing.JPanel;
+
+import javax.swing.*;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -33,13 +34,12 @@ public class Compteur extends JPanel implements Runnable {
 
     @Override
     public void run() {
-        while (processScores != null){
+        while (processScores != null) {
             try {
                 Thread.sleep(10);
                 cpt += 0.01;
                 repaint();
-            }
-            catch (InterruptedException exception){
+            } catch (InterruptedException exception) {
                 exception.printStackTrace();
             }
         }
@@ -49,7 +49,7 @@ public class Compteur extends JPanel implements Runnable {
     @Override
     public void paintComponent(Graphics gc) {
         super.paintComponent(gc);
-        gc.drawString("Timer: " + nf.format(cpt), this.getWidth()/2 , this.getHeight()/2);
+        gc.drawString("Timer: " + nf.format(cpt), this.getWidth() / 2, this.getHeight() / 2);
     }
 
     void stop() {

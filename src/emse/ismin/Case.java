@@ -19,16 +19,15 @@ public class Case extends JPanel implements MouseListener {
     private boolean clicked = false;
     private Compteur compteur;
     private boolean enabled;
-    private Case[][] tabCases;
+    private boolean counted;
 
-    Case(int x, int y, Demineur demineur, Compteur compteur, Case[][] tabCases) {
+    Case(int x, int y, Demineur demineur, Compteur compteur) {
         setPreferredSize(new Dimension(DIM, DIM));
         addMouseListener(this);
         setBackground(Color.lightGray);
         this.demineur = demineur;
         this.compteur = compteur;
         this.enabled = true;
-        this.tabCases = tabCases;
         this.x = x;
         this.y = y;
     }
@@ -52,7 +51,30 @@ public class Case extends JPanel implements MouseListener {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            } else gc.drawString(txt, this.getHeight() / 2, this.getWidth() / 2);
+            } else {
+                gc.drawString(txt, this.getHeight() / 2, this.getWidth() / 2);
+                countCases();
+                counted = true;
+            }
+        }
+    }
+
+    private void countCases() {
+        if(!counted) {
+            demineur.setDiscoveredCases(demineur.getDiscoveredCases() + 1);
+            System.out.println(demineur.getDiscoveredCases());
+            repaint();
+            if (demineur.getChamp().getNumberOfMines() == Math.pow(demineur.getChamp().getBoard().length, 2) - demineur.getDiscoveredCases()){
+                demineur.getIhmDemineur().blockGame();
+                if (JOptionPane.showConfirmDialog(
+                        null,
+                        "Turlututu chapeau pointu, tu as gagné ! Veux-tu recommencer ?",
+                        "BEAU GOSSE",
+                        JOptionPane.YES_NO_OPTION
+                ) == JOptionPane.YES_OPTION) {
+                    demineur.getIhmDemineur().newPartie();
+                }
+            }
         }
     }
 
@@ -63,16 +85,16 @@ public class Case extends JPanel implements MouseListener {
      */
     @Override
     public void mousePressed(MouseEvent e) {
-        if(enabled) {
+        if (enabled) {
             compteur.start();
+            repaint();
             txt = demineur.getChamp().display(x, y);
             clicked = true;
-            repaint();
             if (txt.equals("Mine")) {
-                demineur.getIhmDemineur().setLose();
+                demineur.getIhmDemineur().blockGame();
                 if (JOptionPane.showConfirmDialog(
                         null,
-                        "You lost ! Would you like to start over ?",
+                        "You lost ! You clicked on " + demineur.getDiscoveredCases() + " cases. Would you like to start over ?",
                         "Defeat",
                         JOptionPane.YES_NO_OPTION
                 ) == JOptionPane.YES_OPTION) {
@@ -101,6 +123,7 @@ public class Case extends JPanel implements MouseListener {
     void newPartie() {
         clicked = false;
         enabled = true;
+        counted = false;
         repaint();
     }
 }

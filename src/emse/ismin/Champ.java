@@ -5,10 +5,10 @@ import java.util.Random;
 /**
  * @author jean-christophe
  * @version 1.0
- *
+ * <p>
  * This classes contains methods and variables that describes the champ. It contains 2 variables:
- *      - boolean[][] board : a squared board. The case value is "true" if it contains a mine, "false" if it does not.
- *      - int numberOfMines : specify the number of mines inside that champ.
+ * - boolean[][] board : a squared board. The case value is "true" if it contains a mine, "false" if it does not.
+ * - int numberOfMines : specify the number of mines inside that champ.
  */
 
 public class Champ {
@@ -19,11 +19,12 @@ public class Champ {
     /**
      * Default constructor, only used to create an empty instance of the class
      */
-    private Champ() {}
+    private Champ() {
+    }
 
     /**
      * @param numberOfMines the number of mines that you want
-     * @param boardSize the size of the side of the board
+     * @param boardSize     the size of the side of the board
      */
     Champ(int numberOfMines, int boardSize) {
         this.numberOfMines = numberOfMines;
@@ -32,25 +33,27 @@ public class Champ {
 
     /**
      * Creates a new emse.ismin.Champ instance in function of the difficulty
+     *
      * @param level the difficulty of the game
      */
     Champ(Level level) {
         this();
-        if(level == Level.Easy) {
+        if (level == Level.Easy) {
             setChamp(5, 5);
         }
-        if(level == Level.Medium) {
+        if (level == Level.Medium) {
             setChamp(30, 8);
         }
-        if(level == Level.Hard) {
+        if (level == Level.Hard) {
             setChamp(60, 10);
         }
     }
 
     /**
      * Set the number of mines and the size of the board
+     *
      * @param numberOfMines the number of mines that you want
-     * @param boardSize the size of the side of the board
+     * @param boardSize     the size of the side of the board
      */
     private void setChamp(int numberOfMines, int boardSize) {
         this.numberOfMines = numberOfMines;
@@ -63,7 +66,7 @@ public class Champ {
     void placeMines() {
         board = new boolean[board.length][board.length];
         int i = 0;
-        while(i < Math.min(numberOfMines, board.length * board.length)) {
+        while (i < Math.min(numberOfMines, board.length * board.length)) {
             int x = new Random().nextInt(board.length);
             int y = new Random().nextInt(board.length);
             if (!board[x][y]) {
@@ -85,8 +88,8 @@ public class Champ {
             for (int j = y - 1; j <= y + 1; j++) {
                 try {
                     if (board[i][j]) minesCounter++;
+                } catch (ArrayIndexOutOfBoundsException ignored) {
                 }
-                catch (ArrayIndexOutOfBoundsException ignored) {}
             }
         }
         if (minesCounter > 0) result = String.valueOf(minesCounter);
@@ -99,9 +102,9 @@ public class Champ {
      */
     @Override
     public String toString() {
-        for(int i = 0; i<board.length; i++){
+        for (int i = 0; i < board.length; i++) {
             StringBuilder display = new StringBuilder();
-            for (int j = 0; j < board.length; j++){
+            for (int j = 0; j < board.length; j++) {
                 if (board[i][j]) display.append("X ");
                 else {
                     display.append(minesAround(i, j));
@@ -113,8 +116,8 @@ public class Champ {
         return "";
     }
 
-    String display(int x, int y){
-        if(board[x][y]) return "Mine";
+    String display(int x, int y) {
+        if (board[x][y]) return "Mine";
         else return minesAround(x, y);
     }
 
@@ -123,15 +126,17 @@ public class Champ {
     }
 
     void setBoard(Level level) {
-        if(level == Level.Easy) {
+        if (level == Level.Easy) {
             setChamp(5, 5);
-        }
-        else if(level == Level.Medium) {
+        } else if (level == Level.Medium) {
             setChamp(30, 8);
-        }
-        else {
+        } else {
             setChamp(60, 10);
         }
         placeMines();
+    }
+
+    int getNumberOfMines() {
+        return numberOfMines;
     }
 }
