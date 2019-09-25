@@ -8,6 +8,7 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Calendar;
 
 public class Case extends JPanel implements MouseListener {
 
@@ -18,7 +19,7 @@ public class Case extends JPanel implements MouseListener {
     private Demineur demineur;
     private boolean clicked = false;
     private Compteur compteur;
-    private boolean enabled;
+    private boolean enabledClick;
     private boolean counted;
 
     Case(int x, int y, Demineur demineur, Compteur compteur) {
@@ -27,14 +28,14 @@ public class Case extends JPanel implements MouseListener {
         setBackground(Color.lightGray);
         this.demineur = demineur;
         this.compteur = compteur;
-        this.enabled = true;
+        this.enabledClick = true;
         this.x = x;
         this.y = y;
     }
 
     @Override
     public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+        this.enabledClick = enabled;
     }
 
     @Override
@@ -65,11 +66,15 @@ public class Case extends JPanel implements MouseListener {
             System.out.println(demineur.getDiscoveredCases());
             repaint();
             if (demineur.getChamp().getNumberOfMines() == Math.pow(demineur.getChamp().getBoard().length, 2) - demineur.getDiscoveredCases()){
+
                 demineur.getIhmDemineur().blockGame();
+                demineur.getScoreRegistering().addScore(demineur.getIhmDemineur().getCompteur().getTime(), Calendar.getInstance().getTime(), demineur.getChamp().getLevel().name());
+                demineur.getScoreRegistering().write();
+
                 if (JOptionPane.showConfirmDialog(
                         null,
                         "Turlututu chapeau pointu, tu as gagné ! Veux-tu recommencer ?",
-                        "BEAU GOSSE",
+                        "BEAU GOSSE !!!",
                         JOptionPane.YES_NO_OPTION
                 ) == JOptionPane.YES_OPTION) {
                     demineur.getIhmDemineur().newPartie();
@@ -85,7 +90,7 @@ public class Case extends JPanel implements MouseListener {
      */
     @Override
     public void mousePressed(MouseEvent e) {
-        if (enabled) {
+        if (enabledClick) {
             compteur.start();
             repaint();
             txt = demineur.getChamp().display(x, y);
@@ -122,7 +127,7 @@ public class Case extends JPanel implements MouseListener {
 
     void newPartie() {
         clicked = false;
-        enabled = true;
+        enabledClick = true;
         counted = false;
         repaint();
     }

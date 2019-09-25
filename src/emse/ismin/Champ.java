@@ -15,6 +15,7 @@ public class Champ {
 
     private int numberOfMines;
     private boolean[][] board;
+    private Level level;
 
     /**
      * Default constructor, only used to create an empty instance of the class
@@ -39,13 +40,16 @@ public class Champ {
     Champ(Level level) {
         this();
         if (level == Level.Easy) {
-            setChamp(5, 5);
+            setChamp(2, 5);
+            this.level = level;
         }
         if (level == Level.Medium) {
             setChamp(30, 8);
+            this.level = level;
         }
         if (level == Level.Hard) {
             setChamp(60, 10);
+            this.level = level;
         }
     }
 
@@ -127,7 +131,7 @@ public class Champ {
 
     void setBoard(Level level) {
         if (level == Level.Easy) {
-            setChamp(5, 5);
+            setChamp(2, 5);
         } else if (level == Level.Medium) {
             setChamp(30, 8);
         } else {
@@ -138,5 +142,9 @@ public class Champ {
 
     int getNumberOfMines() {
         return numberOfMines;
+    }
+
+    Level getLevel() {
+        return level;
     }
 }

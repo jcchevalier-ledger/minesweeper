@@ -9,6 +9,7 @@ public class Demineur extends JFrame {
     private Champ champ;
     private IHMDemineur ihmDemineur;
     private int discoveredCases = 0;
+    private ScoreRegistering scoreRegistering = new ScoreRegistering();
 
     private Demineur() {
         super("Démineur");
@@ -44,7 +45,12 @@ public class Demineur extends JFrame {
         return champ;
     }
 
+    ScoreRegistering getScoreRegistering() {
+        return scoreRegistering;
+    }
+
     void quit() {
+        scoreRegistering.write();
         System.out.println("Bye-Bye");
         System.exit(0);
     }

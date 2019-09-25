@@ -19,7 +19,7 @@ public class IHMDemineur extends JPanel implements ActionListener {
     private JMenuItem mMedium = new JMenuItem("Medium", KeyEvent.VK_M);
     private JMenuItem mHard = new JMenuItem("Hard", KeyEvent.VK_H);
     private JMenuItem mCustom = new JMenuItem("Custom", KeyEvent.VK_H);
-    private JMenuItem mRestart = new JMenuItem("Recommencer");
+    private JMenuItem mRestart = new JMenuItem("Restart");
     private Compteur compteur = new Compteur(150, 30);
 
 
@@ -103,7 +103,7 @@ public class IHMDemineur extends JPanel implements ActionListener {
     }
 
     void newPartie() {
-        //demineur.getChamp().placeMines();
+        demineur.getChamp().placeMines();
         for (int i = 0; i < demineur.getChamp().getBoard().length; i++) {
             for (int j = 0; j < demineur.getChamp().getBoard().length; j++) {
                 tabCases[i][j].newPartie();
@@ -164,7 +164,7 @@ public class IHMDemineur extends JPanel implements ActionListener {
         }
     }
 
-    public Compteur getCompteur() {
+    Compteur getCompteur() {
         return compteur;
     }
 }

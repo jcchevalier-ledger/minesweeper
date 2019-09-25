@@ -55,4 +55,8 @@ public class Compteur extends JPanel implements Runnable {
     void stop() {
         processScores = null;
     }
+
+    String getTime() {
+        return nf.format(cpt);
+    }
 }
