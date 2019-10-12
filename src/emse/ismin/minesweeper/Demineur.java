@@ -1,4 +1,6 @@
-package emse.ismin;
+package emse.ismin.minesweeper;
+
+import emse.ismin.Level;
 
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
@@ -10,9 +12,10 @@ public class Demineur extends JFrame {
     private IHMDemineur ihmDemineur;
     private int discoveredCases = 0;
     private ScoreRegistering scoreRegistering = new ScoreRegistering();
+    private Client client = null;
 
     private Demineur() {
-        super("Démineur");
+        super("MineSweeper");
 
         this.champ = new Champ(Level.Easy);
         champ.placeMines();
@@ -65,5 +68,13 @@ public class Demineur extends JFrame {
 
     void setDiscoveredCases(int discoveredCases) {
         this.discoveredCases = discoveredCases;
+    }
+
+    Client getClient() {
+        return client;
+    }
+
+    void setClient(Client client) {
+        this.client = client;
     }
 }

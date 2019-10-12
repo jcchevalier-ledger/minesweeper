@@ -1,4 +1,6 @@
-package emse.ismin;
+package emse.ismin.minesweeper;
+
+import emse.ismin.Level;
 
 import java.util.Random;
 
@@ -33,14 +35,14 @@ public class Champ {
     }
 
     /**
-     * Creates a new emse.ismin.Champ instance in function of the difficulty
+     * Creates a new emse.ismin.minesweeper.Champ instance in function of the difficulty
      *
      * @param level the difficulty of the game
      */
-    Champ(Level level) {
+    public Champ(Level level) {
         this();
         if (level == Level.Easy) {
-            setChamp(2, 5);
+            setChamp(1, 3);
             this.level = level;
         }
         if (level == Level.Medium) {
@@ -67,7 +69,7 @@ public class Champ {
     /**
      * Generates the specified number of mines inside the champ and inserts their positions inside the minesPositions array.
      */
-    void placeMines() {
+    public void placeMines() {
         board = new boolean[board.length][board.length];
         int i = 0;
         while (i < Math.min(numberOfMines, board.length * board.length)) {
@@ -85,7 +87,7 @@ public class Champ {
      * @param y ordinate of the point
      * @return a string that is equal to the number of mines around the computed coordinates, or a point if there are none
      */
-    private String minesAround(int x, int y) {
+    public String minesAround(int x, int y) {
         String result;
         int minesCounter = 0;
         for (int i = x - 1; i <= x + 1; i++) {
@@ -125,22 +127,24 @@ public class Champ {
         else return minesAround(x, y);
     }
 
-    boolean[][] getBoard() {
+    public boolean[][] getBoard() {
         return board;
     }
 
     void setBoard(Level level) {
         if (level == Level.Easy) {
-            setChamp(2, 5);
+            this.level = Level.Easy;
+            setChamp(1, 3);
         } else if (level == Level.Medium) {
+            this.level = Level.Medium;
             setChamp(30, 8);
         } else {
+            this.level = Level.Hard;
             setChamp(60, 10);
         }
-        placeMines();
     }
 
-    int getNumberOfMines() {
+    public int getNumberOfMines() {
         return numberOfMines;
     }
 

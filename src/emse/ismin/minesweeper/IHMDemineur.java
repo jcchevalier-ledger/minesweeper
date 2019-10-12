@@ -1,4 +1,6 @@
-package emse.ismin;
+package emse.ismin.minesweeper;
+
+import emse.ismin.Level;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,6 +24,12 @@ public class IHMDemineur extends JPanel implements ActionListener {
     private JMenuItem mRestart = new JMenuItem("Restart");
     private Compteur compteur = new Compteur(150, 30);
 
+    private JTextArea log = new JTextArea("Welcome to the Minesweeper\n", 10, 20);
+
+    private JButton join;
+    private JTextField ipAddress;
+    private JTextField port;
+    private JTextField pseudo;
 
     IHMDemineur(Demineur demineur) {
         setLayout(new BorderLayout());
@@ -32,6 +40,8 @@ public class IHMDemineur extends JPanel implements ActionListener {
 
         createGrid();
         add(grid, BorderLayout.CENTER);
+
+        add(createFooter(), BorderLayout.SOUTH);
 
         createMenuPartie();
     }
@@ -91,6 +101,33 @@ public class IHMDemineur extends JPanel implements ActionListener {
         }
     }
 
+    private JPanel createFooter() {
+        JPanel footer = new JPanel();
+        footer.setLayout(new FlowLayout());
+
+        JLabel ipAddressLabel = new JLabel("IP: ");
+        ipAddress = new JTextField("127.0.0.1");
+
+        JLabel portLabel = new JLabel("Port: ");
+        port = new JTextField("10000");
+
+        JLabel pseudoLabel = new JLabel("Pseudo: ");
+        pseudo = new JTextField("", 5);
+
+        join = new JButton("Join !");
+        join.addActionListener(this);
+
+        footer.add(ipAddressLabel);
+        footer.add(ipAddress);
+        footer.add(portLabel);
+        footer.add(port);
+        footer.add(pseudoLabel);
+        footer.add(pseudo);
+        footer.add(join);
+
+        return footer;
+    }
+
     private JPanel createHeader() {
         JPanel header = new JPanel();
         header.setLayout(new FlowLayout());
@@ -102,8 +139,18 @@ public class IHMDemineur extends JPanel implements ActionListener {
         return header;
     }
 
+    void createLog() {
+        log.setEditable(false);
+        JScrollPane jScrollPane = new JScrollPane(log);
+        jScrollPane.getVerticalScrollBar().addAdjustmentListener(e -> e.getAdjustable().setValue(e.getAdjustable().getMaximum()));
+
+        add(jScrollPane, BorderLayout.EAST);
+    }
+
     void newPartie() {
-        demineur.getChamp().placeMines();
+        if (demineur.getClient() == null) {
+            demineur.getChamp().placeMines();
+        }
         for (int i = 0; i < demineur.getChamp().getBoard().length; i++) {
             for (int j = 0; j < demineur.getChamp().getBoard().length; j++) {
                 tabCases[i][j].newPartie();
@@ -113,7 +160,7 @@ public class IHMDemineur extends JPanel implements ActionListener {
         demineur.setDiscoveredCases(0);
     }
 
-    private void newPartie(Level level) {
+    void newPartie(Level level) {
         grid.removeAll();
         createGrid();
         add(grid, BorderLayout.CENTER);
@@ -143,16 +190,28 @@ public class IHMDemineur extends JPanel implements ActionListener {
             demineur.getChamp().setBoard(Level.Hard);
             newPartie(Level.Hard);
         }
-        /*if (event.getSource() == mCustom) {
-            demineur.getChamp().setBoard(Level.Hard);
-            newPartie();
-        }*/
         if (event.getSource() == mRestart) {
             newPartie();
         }
         if (event.getSource() == grid) {
             compteur.start();
         }
+        if (event.getSource() == join) {
+            demineur.setClient(new Client(ipAddress.getText(), port.getText(), pseudo.getText(), demineur));
+        }
+    }
+
+    void displayID() {
+        JOptionPane.showConfirmDialog(
+                null,
+                "You are now connected. Your pseudo is " + demineur.getClient().getPlayerName() + " and your ID is " + demineur.getClient().getPlayerNum() + ".",
+                "Connected !",
+                JOptionPane.DEFAULT_OPTION
+        );
+        join.setEnabled(false);
+        ipAddress.setEnabled(false);
+        port.setEnabled(false);
+        pseudo.setEnabled(false);
     }
 
     void blockGame() {
@@ -166,5 +225,13 @@ public class IHMDemineur extends JPanel implements ActionListener {
 
     Compteur getCompteur() {
         return compteur;
+    }
+
+    JTextArea getLog() {
+        return log;
+    }
+
+    Case[][] getTabCases() {
+        return tabCases;
     }
 }
