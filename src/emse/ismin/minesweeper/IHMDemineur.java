@@ -4,10 +4,7 @@ import emse.ismin.Level;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
+import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -153,9 +150,13 @@ public class IHMDemineur extends JPanel implements ActionListener {
 
         log.setEditable(false);
         JScrollPane jScrollPane = new JScrollPane(log);
+        jScrollPane.setPreferredSize(new Dimension(50, 300));
         EmptyBorder emptyBorder = new EmptyBorder(new Insets(10, 10, 10, 10));
         jScrollPane.setBorder(emptyBorder);
         log.setText("Welcome to the online version of the MineSweeper !\n");
+
+        DefaultCaret caret = (DefaultCaret) log.getCaret();
+        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 
         chatBar.add(chat);
         chatBar.add(sendChat);
@@ -218,6 +219,7 @@ public class IHMDemineur extends JPanel implements ActionListener {
             demineur.setClient(new Client(ipAddress.getText(), port.getText(), pseudo.getText(), demineur));
         } else if (sendChat.equals(source)) {
             String message = this.chat.getText();
+            this.chat.setText("");
             demineur.getClient().sendMessage(message);
         }
     }
@@ -266,5 +268,13 @@ public class IHMDemineur extends JPanel implements ActionListener {
 
     Case[][] getTabCases() {
         return tabCases;
+    }
+
+    JTextArea getChat() {
+        return chat;
+    }
+
+    JButton getSendChat() {
+        return sendChat;
     }
 }

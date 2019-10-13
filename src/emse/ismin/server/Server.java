@@ -76,13 +76,19 @@ class Server extends Thread {
 
     void stopGame() {
         int playerScore;
+        broadcastMessage(getDate() + " -  Game is finished ! Here are the overall scores:\n");
         for (ClientThread clientThread : clientList) {
             playerScore = clientThread.getScoreRound();
             broadcastMessage("     " + clientThread.getPlayerName() + ": " + playerScore + "\n");
             ihmServer.getLog().append("     " + clientThread.getPlayerName() + ": " + playerScore + "\n");
-            clientList.remove(clientThread);
         }
         broadcastMessage("The server will be closed shortly. Thanks for playing!\n");
+        closeServer();
+    }
+
+    private void closeServer() {
+        clientList.clear();
+        System.exit(0);
     }
 
     void stopSocketServer() {
@@ -148,7 +154,6 @@ class Server extends Thread {
                 broadcastMessage(clientThread.getPlayerName() + " has left the game\n");
                 ihmServer.getLog().append(getDate() + " - " + clientThread.getPlayerName() + " has left the game\n");
                 clientThread.stopThread();
-                clientList.remove(clientThread);
             }
         }
     }
@@ -175,7 +180,7 @@ class Server extends Thread {
 
     void checkReplay() {
         for (ClientThread clientThread : clientList) {
-            if (!clientThread.getReplay()) {
+            if ((!clientThread.wantsToReplay()) && (!clientThread.hasLeft())) {
                 return;
             }
         }
@@ -222,6 +227,7 @@ class ClientThread extends Thread {
     private int scoreRound = 0;
     private boolean hasLost = false;
     private boolean wantsToReplay;
+    private boolean hasLeft = false;
     private boolean started;
 
     ClientThread(Socket sock, DataInputStream in, DataOutputStream out, int clientID, Server server) throws IOException {
@@ -263,20 +269,23 @@ class ClientThread extends Thread {
                             server.getIhmServer().getLog().append(server.getDate() + " - " + playerName + " wants to play again!\n");
                             wantsToReplay = true;
                             server.checkReplay();
-
                         } else {
                             server.stopThread(clientID);
+                            hasLeft = true;
+                            server.checkReplay();
                         }
                         break;
                     case "message":
-                        StringBuilder message = new StringBuilder();
-                        message.append("message ");
-                        message.append(server.getDate()).append(" ");
-                        message.append(playerColor.getRGB()).append(" ");
-                        for (int i = 1; i < arrayInstruction.length; i++) {
-                            message.append(arrayInstruction[i]).append(" ");
+                        if (arrayInstruction.length > 1) {
+                            StringBuilder message = new StringBuilder();
+                            message.append("message ");
+                            message.append(server.getDate()).append(" ");
+                            message.append(playerColor.getRGB()).append(" ");
+                            for (int i = 1; i < arrayInstruction.length; i++) {
+                                message.append(arrayInstruction[i]).append(" ");
+                            }
+                            server.broadcastMessage(message.toString());
                         }
-                        server.broadcastMessage(message.toString());
                         break;
                 }
             }
@@ -337,7 +346,7 @@ class ClientThread extends Thread {
         return scoreRound;
     }
 
-    boolean getReplay() {
+    boolean wantsToReplay() {
         return wantsToReplay;
     }
 
@@ -347,5 +356,9 @@ class ClientThread extends Thread {
 
     void setWantsToReplay(boolean wantsToReplay) {
         this.wantsToReplay = wantsToReplay;
+    }
+
+    boolean hasLeft() {
+        return hasLeft;
     }
 }

@@ -86,9 +86,7 @@ class Client extends Thread {
                                     JOptionPane.YES_NO_OPTION
                             ) == JOptionPane.NO_OPTION) {
                                 out.writeUTF("new false");
-                                demineur.setClient(null);
-                                demineur.getChamp().setBoard(Level.Easy);
-                                demineur.getIhmDemineur().newGame(Level.Easy);
+                                this.close();
                             } else {
                                 out.writeUTF("new true");
                                 replaying = true;
@@ -153,6 +151,14 @@ class Client extends Thread {
 
         } catch (IOException e) {
             demineur.getIhmDemineur().appendToPane("Connexion lost ...\n", Color.red, true);
+            int choice = JOptionPane.showConfirmDialog(
+                    null,
+                    "You have lost your connection with the server! Do you want to play in solo mode ?",
+                    "Connexion lost !",
+                    JOptionPane.YES_NO_OPTION);
+            if (choice == JOptionPane.YES_OPTION) {
+                this.close();
+            }
         }
     }
 
@@ -172,10 +178,19 @@ class Client extends Thread {
         return started;
     }
 
-    private void close() throws IOException {
-        in.close();
-        out.close();
-        sock.close();
+    private void close() {
+        try {
+            in.close();
+            out.close();
+            sock.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        demineur.getChamp().setBoard(Level.Easy);
+        demineur.getIhmDemineur().newGame(Level.Easy);
+        demineur.getIhmDemineur().getChat().setEnabled(false);
+        demineur.getIhmDemineur().getSendChat().setEnabled(false);
+        demineur.setClient(null);
     }
 
     void sendMessage(String message) {
