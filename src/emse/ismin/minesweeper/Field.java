@@ -1,52 +1,44 @@
-package emse.ismin;
+package emse.ismin.minesweeper;
+
+import emse.ismin.Level;
 
 import java.util.Random;
 
 /**
- * @author jean-christophe
- * @version 1.0
- * <p>
  * This classes contains methods and variables that describes the champ. It contains 2 variables:
  * - boolean[][] board : a squared board. The case value is "true" if it contains a mine, "false" if it does not.
  * - int numberOfMines : specify the number of mines inside that champ.
  */
 
-public class Champ {
+public class Field {
 
     private int numberOfMines;
     private boolean[][] board;
+    private Level level;
 
     /**
      * Default constructor, only used to create an empty instance of the class
      */
-    private Champ() {
+    private Field() {
     }
 
     /**
      * @param numberOfMines the number of mines that you want
      * @param boardSize     the size of the side of the board
      */
-    Champ(int numberOfMines, int boardSize) {
+    Field(int numberOfMines, int boardSize) {
         this.numberOfMines = numberOfMines;
         this.board = new boolean[boardSize][boardSize];
     }
 
     /**
-     * Creates a new emse.ismin.Champ instance in function of the difficulty
+     * Creates a new Champ instance in function of the difficulty
      *
      * @param level the difficulty of the game
      */
-    Champ(Level level) {
+    public Field(Level level) {
         this();
-        if (level == Level.Easy) {
-            setChamp(5, 5);
-        }
-        if (level == Level.Medium) {
-            setChamp(30, 8);
-        }
-        if (level == Level.Hard) {
-            setChamp(60, 10);
-        }
+        setBoard(level);
     }
 
     /**
@@ -63,7 +55,7 @@ public class Champ {
     /**
      * Generates the specified number of mines inside the champ and inserts their positions inside the minesPositions array.
      */
-    void placeMines() {
+    public void placeMines() {
         board = new boolean[board.length][board.length];
         int i = 0;
         while (i < Math.min(numberOfMines, board.length * board.length)) {
@@ -81,7 +73,7 @@ public class Champ {
      * @param y ordinate of the point
      * @return a string that is equal to the number of mines around the computed coordinates, or a point if there are none
      */
-    private String minesAround(int x, int y) {
+    public String minesAround(int x, int y) {
         String result;
         int minesCounter = 0;
         for (int i = x - 1; i <= x + 1; i++) {
@@ -116,27 +108,55 @@ public class Champ {
         return "";
     }
 
+    /**
+     * @param x the x-coordinate of the case
+     * @param y the y-coordinate of the case
+     * @return a String, which is "Mine" if the case clicked-on is a mine or the number of mines around if not.
+     */
     String display(int x, int y) {
         if (board[x][y]) return "Mine";
         else return minesAround(x, y);
     }
 
-    boolean[][] getBoard() {
+    /**
+     * @return the board of the Champ
+     */
+    public boolean[][] getBoard() {
         return board;
     }
 
+    /**
+     * This method is a Board setter, in function of the level.
+     *
+     * @param level the level of the game. It can be:
+     *              - Easy
+     *              - Medium
+     *              - Hard
+     */
     void setBoard(Level level) {
         if (level == Level.Easy) {
-            setChamp(5, 5);
+            this.level = Level.Easy;
+            setChamp(2, 5);
         } else if (level == Level.Medium) {
-            setChamp(30, 8);
+            this.level = Level.Medium;
+            setChamp(15, 8);
         } else {
-            setChamp(60, 10);
+            this.level = Level.Hard;
+            setChamp(30, 10);
         }
-        placeMines();
     }
 
-    int getNumberOfMines() {
+    /**
+     * @return the number of mines in this champ.
+     */
+    public int getNumberOfMines() {
         return numberOfMines;
+    }
+
+    /**
+     * @return the actual level of the game.
+     */
+    Level getLevel() {
+        return level;
     }
 }
