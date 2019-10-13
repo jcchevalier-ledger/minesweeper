@@ -10,35 +10,59 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
 
-public class Case extends JPanel implements MouseListener {
+/**
+ * Each case in the MineSweeper is represented by this class. It is a JPanel which uses the MouseListener interface.
+ *
+ * @author jean-christophe
+ * @version 1.0
+ */
+
+public class Cell extends JPanel implements MouseListener {
 
     private final static int DIM = 100;
     private int x;
     private int y;
     private String txt = "";
-    private Demineur demineur;
+    private Minesweeper minesweeper;
     private boolean clicked = false;
-    private Compteur compteur;
+    private Counter counter;
     private boolean enabledClick;
     private boolean counted;
     private Color color = Color.lightGray;
 
-    Case(int x, int y, Demineur demineur, Compteur compteur) {
+    /**
+     * @param x           x-position of the case.
+     * @param y           y-position of the case.
+     * @param minesweeper is an instance of the Minesweeper class related to this specific case.
+     * @param counter     is the counter that computes the elapsed time. When the first case is clicked, it starts this counter.
+     */
+    Cell(int x, int y, Minesweeper minesweeper, Counter counter) {
         setPreferredSize(new Dimension(DIM, DIM));
         addMouseListener(this);
         setBackground(Color.lightGray);
-        this.demineur = demineur;
-        this.compteur = compteur;
+        this.minesweeper = minesweeper;
+        this.counter = counter;
         this.enabledClick = true;
         this.x = x;
         this.y = y;
     }
 
+    /**
+     * @param enabled a boolean that specifies if whether or not the click function must be activated for this case.
+     */
     @Override
     public void setEnabled(boolean enabled) {
         this.enabledClick = enabled;
     }
 
+    /**
+     * This method is used to repaint the case in function of many condition:
+     * - if the case is not clicked, it is colored in a blue-green
+     * - if the case is clicked and corresponds to a mine, the case displays a wonderful face.
+     * - if not, the case displays the number of mines around this case.
+     *
+     * @param gc an instance of the Graphic class, which is used in order to draw onto components.
+     */
     @Override
     public void paintComponent(Graphics gc) {
         super.paintComponent(gc);
@@ -66,6 +90,11 @@ public class Case extends JPanel implements MouseListener {
         }
     }
 
+    /**
+     * This method is used to draw a string at the center of the case, in a responsive way.
+     *
+     * @param gc an instance of the Graphic class, which is used in order to draw onto components.
+     */
     private void drawCenterString(Graphics gc) {
         FontMetrics fm = gc.getFontMetrics();
         int stringWidth = fm.stringWidth(txt);
@@ -75,15 +104,19 @@ public class Case extends JPanel implements MouseListener {
         gc.drawString(txt, xCoordinate, yCoordinate);
     }
 
+    /**
+     * Computes the number of clicked cases during a game in the single-player mode. If the number of cases equals
+     * the size of the champ minus the number of mines, then the game is won and it offers to start a new one.
+     */
     private void countCases() {
-        if (!counted && (demineur.getClient() == null)) {
-            demineur.setDiscoveredCases(demineur.getDiscoveredCases() + 1);
+        if (!counted && (minesweeper.getClient() == null)) {
+            minesweeper.setDiscoveredCases(minesweeper.getDiscoveredCases() + 1);
             repaint();
-            if (demineur.getChamp().getNumberOfMines() == Math.pow(demineur.getChamp().getBoard().length, 2) - demineur.getDiscoveredCases()){
+            if (minesweeper.getField().getNumberOfMines() == Math.pow(minesweeper.getField().getBoard().length, 2) - minesweeper.getDiscoveredCases()) {
 
-                demineur.getIhmDemineur().blockGame();
-                demineur.getScoreRegistering().addScore(demineur.getIhmDemineur().getCompteur().getTime(), Calendar.getInstance().getTime(), demineur.getChamp().getLevel().name());
-                demineur.getScoreRegistering().write();
+                minesweeper.getGUIMineSweeper().blockGame();
+                minesweeper.getScoreRegistering().addScore(minesweeper.getGUIMineSweeper().getCounter().getTime(), Calendar.getInstance().getTime(), minesweeper.getField().getLevel().name());
+                minesweeper.getScoreRegistering().write();
 
                 if (JOptionPane.showConfirmDialog(
                         null,
@@ -91,7 +124,7 @@ public class Case extends JPanel implements MouseListener {
                         "Handsome fellow !!!",
                         JOptionPane.YES_NO_OPTION
                 ) == JOptionPane.YES_OPTION) {
-                    demineur.getIhmDemineur().newGame();
+                    minesweeper.getGUIMineSweeper().newGame();
                 }
             }
         }
@@ -104,28 +137,28 @@ public class Case extends JPanel implements MouseListener {
      */
     @Override
     public void mousePressed(MouseEvent e) {
-        if (demineur.getClient() == null) {
+        if (minesweeper.getClient() == null) {
             if (enabledClick) {
-                compteur.start();
+                counter.start();
                 repaint();
-                txt = demineur.getChamp().display(x, y);
+                txt = minesweeper.getField().display(x, y);
                 clicked = true;
                 if (txt.equals("Mine")) {
-                    demineur.getIhmDemineur().blockGame();
+                    minesweeper.getGUIMineSweeper().blockGame();
                     if (JOptionPane.showConfirmDialog(
                             null,
-                            "You lost ! You clicked on " + demineur.getDiscoveredCases() + " cases. Would you like to start over ?",
+                            "You lost ! You clicked on " + minesweeper.getDiscoveredCases() + " cases. Would you like to start over ?",
                             "Defeat",
                             JOptionPane.YES_NO_OPTION
                     ) == JOptionPane.YES_OPTION) {
-                        demineur.getIhmDemineur().newGame();
+                        minesweeper.getGUIMineSweeper().newGame();
                     }
                 }
             }
         } else {
             try {
-                if (demineur.getClient().isStarted()) {
-                    demineur.getClient().getOut().writeUTF("click " + x + " " + y);
+                if (minesweeper.getClient().isStarted()) {
+                    minesweeper.getClient().getOut().writeUTF("click " + x + " " + y);
                 }
             } catch (IOException ex) {
                 ex.printStackTrace();
@@ -133,29 +166,53 @@ public class Case extends JPanel implements MouseListener {
         }
     }
 
+    /**
+     * This method is not used.
+     */
     @Override
     public void mouseClicked(MouseEvent e) {
     }
 
+    /**
+     * This method is not used.
+     */
     @Override
     public void mouseReleased(MouseEvent e) {
     }
 
+    /**
+     * This method is not used.
+     */
     @Override
     public void mouseEntered(MouseEvent e) {
     }
 
+    /**
+     * This method is not used.
+     */
     @Override
     public void mouseExited(MouseEvent e) {
     }
 
-    void newPartie() {
+    /**
+     * Reinitialize the case to it initial state.
+     */
+    void newGame() {
         clicked = false;
         enabledClick = true;
         counted = false;
         repaint();
     }
 
+    /**
+     * This method is only used in a multi-player game.
+     * This function replaces the "txt" string by its value computed in the server and send back to all the
+     * clients. It also forces the repaint of the case.
+     *
+     * @param isMine specifies if whether or not the case clicked on is a mine.
+     * @param playerColor is the color of the player who clicked on this specific case.
+     * @param nbMines is the number of mines around the clicked case.
+     */
     void clientRepaint(boolean isMine, Color playerColor, int nbMines) {
         clicked = true;
         if (isMine) {

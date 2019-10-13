@@ -11,20 +11,22 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
-public class IHMDemineur extends JPanel implements ActionListener {
+/**
+ * This class handles the graphic interface of the minesweeper.
+ */
+public class GUIMinesweeper extends JPanel implements ActionListener {
 
-    private Case[][] tabCases;
-    private Demineur demineur;
+    private Cell[][] tabCells;
+    private Minesweeper minesweeper;
 
     private JPanel grid = new JPanel();
 
-    private JMenuItem mQuitter = new JMenuItem("Quitter", KeyEvent.VK_Q);
+    private JMenuItem mLeave = new JMenuItem("Leave", KeyEvent.VK_Q);
     private JMenuItem mEasy = new JMenuItem("Easy", KeyEvent.VK_E);
     private JMenuItem mMedium = new JMenuItem("Medium", KeyEvent.VK_M);
     private JMenuItem mHard = new JMenuItem("Hard", KeyEvent.VK_H);
-    private JMenuItem mCustom = new JMenuItem("Custom", KeyEvent.VK_H);
     private JMenuItem mRestart = new JMenuItem("Restart");
-    private Compteur compteur = new Compteur(150, 30);
+    private Counter counter = new Counter(150, 30);
 
     private JTextPane log = new JTextPane();
     private JTextArea chat = new JTextArea(1, 20);
@@ -35,10 +37,13 @@ public class IHMDemineur extends JPanel implements ActionListener {
     private JTextField port;
     private JTextField pseudo;
 
-    IHMDemineur(Demineur demineur) {
+    /**
+     * @param minesweeper is the minesweeper's instance which will run on this instance of the graphical interface.
+     */
+    GUIMinesweeper(Minesweeper minesweeper) {
         setLayout(new BorderLayout());
 
-        this.demineur = demineur;
+        this.minesweeper = minesweeper;
 
         add(createHeader(), BorderLayout.NORTH);
 
@@ -47,23 +52,26 @@ public class IHMDemineur extends JPanel implements ActionListener {
 
         add(createFooter(), BorderLayout.SOUTH);
 
-        createMenuPartie();
+        createGameMenu();
     }
 
-    private void createMenuPartie() {
+    /**
+     * Ths method creates the menu bar located above the minesweeper's header.
+     */
+    private void createGameMenu() {
         JMenuBar jMenuBar = new JMenuBar();
 
-        //Menu partie
-        JMenu menuPartie = new JMenu("Partie");
-        mQuitter.addActionListener(this);
-        mQuitter.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.META_DOWN_MASK));
-        mQuitter.setToolTipText("The End");
+        //Creation of the game menu
+        JMenu gameMenu = new JMenu("Game");
+        mLeave.addActionListener(this);
+        mLeave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.META_DOWN_MASK));
+        mLeave.setToolTipText("The End");
 
-        jMenuBar.add(menuPartie);
-        menuPartie.add(mQuitter);
+        jMenuBar.add(gameMenu);
+        gameMenu.add(mLeave);
 
         //Menu level
-        JMenu menuLevel = new JMenu("Niveau");
+        JMenu menuLevel = new JMenu("Level");
 
         jMenuBar.add(menuLevel);
         menuLevel.add(mEasy);
@@ -72,8 +80,6 @@ public class IHMDemineur extends JPanel implements ActionListener {
         mMedium.addActionListener(this);
         menuLevel.add(mHard);
         mHard.addActionListener(this);
-        menuLevel.add(mCustom);
-        mCustom.addActionListener(this);
 
         menuLevel.add(mRestart);
         mRestart.addActionListener(this);
@@ -83,28 +89,34 @@ public class IHMDemineur extends JPanel implements ActionListener {
         jMenuBar.add(Box.createGlue());
 
         //Menu help
-        JMenu menuHelp = new JMenu("Aide");
-        JMenuItem mAbout = new JMenuItem("A propos");
+        JMenu menuHelp = new JMenu("Help");
+        JMenuItem mAbout = new JMenuItem("About this");
 
         jMenuBar.add(menuHelp);
         menuHelp.add(mAbout);
 
-        demineur.setJMenuBar(jMenuBar);
+        minesweeper.setJMenuBar(jMenuBar);
     }
 
+    /**
+     * Creates the GUI of the grid, on which players will click.
+     */
     private void createGrid() {
-        int n = demineur.getChamp().getBoard().length;
-        tabCases = new Case[n][n];
+        int n = minesweeper.getField().getBoard().length;
+        tabCells = new Cell[n][n];
         grid.setLayout(new GridLayout(n, n));
 
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                tabCases[i][j] = new Case(i, j, demineur, compteur);
-                grid.add(tabCases[i][j]);
+                tabCells[i][j] = new Cell(i, j, minesweeper, counter);
+                grid.add(tabCells[i][j]);
             }
         }
     }
 
+    /**
+     * @return the footer, which allows the player to start an online game.
+     */
     private JPanel createFooter() {
         JPanel footer = new JPanel();
         footer.setLayout(new FlowLayout());
@@ -132,17 +144,23 @@ public class IHMDemineur extends JPanel implements ActionListener {
         return footer;
     }
 
+    /**
+     * @return the header, which contains a little text and one instance of the Counter class.
+     */
     private JPanel createHeader() {
         JPanel header = new JPanel();
         header.setLayout(new FlowLayout());
 
         JLabel title = new JLabel("Welcome on board");
         header.add(title);
-        header.add(compteur);
+        header.add(counter);
 
         return header;
     }
 
+    /**
+     * Create the multi-player interface, which receives and displays all the messages sent by the server.
+     */
     void createLog() {
         JPanel logPanel = new JPanel();
         JPanel chatBar = new JPanel();
@@ -153,7 +171,7 @@ public class IHMDemineur extends JPanel implements ActionListener {
         jScrollPane.setPreferredSize(new Dimension(50, 300));
         EmptyBorder emptyBorder = new EmptyBorder(new Insets(10, 10, 10, 10));
         jScrollPane.setBorder(emptyBorder);
-        log.setText("Welcome to the online version of the MineSweeper !\n");
+        appendToPane("Welcome to the online version of the MineSweeper !\n", Color.red, true);
 
         DefaultCaret caret = (DefaultCaret) log.getCaret();
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
@@ -167,67 +185,82 @@ public class IHMDemineur extends JPanel implements ActionListener {
         logPanel.add(chatBar);
 
         add(logPanel, BorderLayout.EAST);
-        demineur.pack();
+        minesweeper.pack();
         setVisible(true);
     }
 
+    /**
+     * Starts a new game by resetting essential attributes of the class.
+     */
     void newGame() {
-        if (demineur.getClient() == null) {
-            demineur.getChamp().placeMines();
+        if (minesweeper.getClient() == null) {
+            minesweeper.getField().placeMines();
         }
-        for (int i = 0; i < demineur.getChamp().getBoard().length; i++) {
-            for (int j = 0; j < demineur.getChamp().getBoard().length; j++) {
-                tabCases[i][j].newPartie();
+        for (int i = 0; i < minesweeper.getField().getBoard().length; i++) {
+            for (int j = 0; j < minesweeper.getField().getBoard().length; j++) {
+                tabCells[i][j].newGame();
             }
         }
-        compteur.reset();
-        demineur.setDiscoveredCases(0);
+        counter.reset();
+        minesweeper.setDiscoveredCases(0);
     }
 
+    /**
+     * This method modifies the sizes of both the champ and the grid according to the level indicated by the player,
+     * then it starts a new game.
+     *
+     * @param level the level wanted by the player for his new game.
+     */
     void newGame(Level level) {
+        minesweeper.getField().setBoard(level);
         grid.removeAll();
         createGrid();
         add(grid, BorderLayout.CENTER);
         newGame();
-        demineur.pack();
+        minesweeper.pack();
     }
 
+    /**
+     * This method handles all client's actions.
+     *
+     * @param event the triggered event.
+     */
     @Override
     public void actionPerformed(ActionEvent event) {
         Object source = event.getSource();
-        if (mQuitter.equals(source)) {
+        if (mLeave.equals(source)) {
             if (JOptionPane.showConfirmDialog(
                     null,
                     "Are you sure?",
                     "Quit",
                     JOptionPane.YES_NO_OPTION
-            ) == JOptionPane.YES_OPTION) demineur.quit();
+            ) == JOptionPane.YES_OPTION) minesweeper.quit();
         } else if (mEasy.equals(source)) {
-            demineur.getChamp().setBoard(Level.Easy);
             newGame(Level.Easy);
         } else if (mMedium.equals(source)) {
-            demineur.getChamp().setBoard(Level.Medium);
             newGame(Level.Medium);
         } else if (mHard.equals(source)) {
-            demineur.getChamp().setBoard(Level.Hard);
             newGame(Level.Hard);
         } else if (mRestart.equals(source)) {
             newGame();
         } else if (grid.equals(source)) {
-            compteur.start();
+            counter.start();
         } else if (join.equals(source)) {
-            demineur.setClient(new Client(ipAddress.getText(), port.getText(), pseudo.getText(), demineur));
+            minesweeper.setClient(new Client(ipAddress.getText(), port.getText(), pseudo.getText(), minesweeper));
         } else if (sendChat.equals(source)) {
             String message = this.chat.getText();
             this.chat.setText("");
-            demineur.getClient().sendMessage(message);
+            minesweeper.getClient().sendMessage(message);
         }
     }
 
+    /**
+     * Displays the pseudo and the ID of the player when he successfully connects to a server.
+     */
     void displayID() {
         JOptionPane.showConfirmDialog(
                 null,
-                "You are now connected. Your pseudo is " + demineur.getClient().getPlayerName() + " and your ID is " + demineur.getClient().getPlayerNum() + ".",
+                "You are now connected. Your pseudo is " + minesweeper.getClient().getPlayerName() + " and your ID is " + minesweeper.getClient().getPlayerNum() + ".",
                 "Connected !",
                 JOptionPane.DEFAULT_OPTION
         );
@@ -237,7 +270,15 @@ public class IHMDemineur extends JPanel implements ActionListener {
         pseudo.setEnabled(false);
     }
 
-    void appendToPane(String msg, Color color, boolean isAdmin) {
+    /**
+     * Adds a text to the pane "log".
+     *
+     * @param text    the text that needs to be added to the pane.
+     * @param color   the color with which the text must be displayed.
+     * @param isAdmin boolean that states if whether or not this message is send by the server, or if it is a
+     *                message from another client.
+     */
+    void appendToPane(String text, Color color, boolean isAdmin) {
         StyledDocument styledDocument = log.getStyledDocument();
 
         SimpleAttributeSet attributeSet = new SimpleAttributeSet();
@@ -247,34 +288,68 @@ public class IHMDemineur extends JPanel implements ActionListener {
         log.setCaretPosition(log.getText().length());
 
         try {
-            styledDocument.insertString(styledDocument.getLength(), msg, attributeSet);
+            styledDocument.insertString(styledDocument.getLength(), text, attributeSet);
         } catch (BadLocationException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Blocks the game when a mine is hit by the player.
+     */
     void blockGame() {
-        for (Case[] tabCase : tabCases) {
-            for (int j = 0; j < tabCases.length; j++) {
-                tabCase[j].setEnabled(false);
-                compteur.stop();
+        for (Cell[] tabCell : tabCells) {
+            for (int j = 0; j < tabCells.length; j++) {
+                tabCell[j].setEnabled(false);
+                counter.stop();
             }
         }
     }
 
-    Compteur getCompteur() {
-        return compteur;
+    /**
+     * Allow people to join another game after their previous one finishes.
+     */
+    void disableOnlineDisplay() {
+        chat.setEnabled(false);
+        sendChat.setEnabled(false);
+        pseudo.setEnabled(true);
+        port.setEnabled(true);
+        ipAddress.setEnabled(true);
+        join.setEnabled(true);
     }
 
-    Case[][] getTabCases() {
-        return tabCases;
+    /**
+     * @return the counter displayed in this GUI.
+     */
+    Counter getCounter() {
+        return counter;
     }
 
+    /**
+     * @return the array that references all the cases in this game.
+     */
+    Cell[][] getTabCells() {
+        return tabCells;
+    }
+
+    /**
+     * @return return the chat box.
+     */
     JTextArea getChat() {
         return chat;
     }
 
+    /**
+     * @return return the button that needs to be hit to send a message
+     */
     JButton getSendChat() {
         return sendChat;
+    }
+
+    /**
+     * @return returns the text area in which the players writes his name.
+     */
+    JTextField getPseudo() {
+        return pseudo;
     }
 }

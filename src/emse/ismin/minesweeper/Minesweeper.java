@@ -6,22 +6,28 @@ import javax.swing.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-public class Demineur extends JFrame {
+/**
+ * This class contains the main functions that launches a minesweeper's instance.
+ */
+public class Minesweeper extends JFrame {
 
-    private Champ champ;
-    private IHMDemineur ihmDemineur;
+    private Field field;
+    private GUIMinesweeper GUIMineSweeper;
     private int discoveredCases = 0;
     private ScoreRegistering scoreRegistering = new ScoreRegistering();
     private Client client = null;
 
-    private Demineur() {
+    /**
+     * Creates the frame that contains the minesweeper.
+     */
+    private Minesweeper() {
         super("MineSweeper");
 
-        this.champ = new Champ(Level.Easy);
-        champ.placeMines();
+        this.field = new Field(Level.Easy);
+        field.placeMines();
 
-        ihmDemineur = new IHMDemineur(this);
-        setContentPane(ihmDemineur);
+        GUIMineSweeper = new GUIMinesweeper(this);
+        setContentPane(GUIMineSweeper);
 
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
 
@@ -40,40 +46,67 @@ public class Demineur extends JFrame {
         });
     }
 
+    /**
+     * @param args no arguments are used here.
+     */
     public static void main(String[] args) {
-        new Demineur();
+        new Minesweeper();
     }
 
-    Champ getChamp() {
-        return champ;
+    /**
+     * @return the Field instance used in the minesweeper.
+     */
+    Field getField() {
+        return field;
     }
 
+    /**
+     * @return the ScoreRegistering instance used in the minesweeper.
+     */
     ScoreRegistering getScoreRegistering() {
         return scoreRegistering;
     }
 
+    /**
+     * This method stop the execution of this program.
+     */
     void quit() {
         scoreRegistering.write();
         System.out.println("Bye-Bye");
         System.exit(0);
     }
 
-    IHMDemineur getIhmDemineur() {
-        return ihmDemineur;
+    /**
+     * @return return the GUI instance of this minesweeper.
+     */
+    GUIMinesweeper getGUIMineSweeper() {
+        return GUIMineSweeper;
     }
 
+    /**
+     * @return the number of clicked cases in the field, mines excluded.
+     */
     int getDiscoveredCases() {
         return discoveredCases;
     }
 
+    /**
+     * @param discoveredCases the new number of discovered cases.
+     */
     void setDiscoveredCases(int discoveredCases) {
         this.discoveredCases = discoveredCases;
     }
 
+    /**
+     * @return the Client instance.
+     */
     Client getClient() {
         return client;
     }
 
+    /**
+     * @param client the new client.
+     */
     void setClient(Client client) {
         this.client = client;
     }

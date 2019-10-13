@@ -9,6 +9,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
+/**
+ * This class is used to handle the client-server connection client-side. It extends the Thread class.
+ */
 class Client extends Thread {
 
     private int playerNum;
@@ -16,11 +19,17 @@ class Client extends Thread {
     private Socket sock;
     private DataOutputStream out;
     private DataInputStream in;
-    private Demineur demineur;
+    private Minesweeper minesweeper;
     private boolean started;
     private boolean replaying;
 
-    Client(String ipAddress, String port, String playerName, Demineur demineur) {
+    /**
+     * @param ipAddress   is the ipAddress of the server.
+     * @param port        is the port on which the server accept connexions for this application.
+     * @param playerName  is the player's name. "Huguette" is the default player-name.
+     * @param minesweeper is the actual instance of the minesweeper.
+     */
+    Client(String ipAddress, String port, String playerName, Minesweeper minesweeper) {
         try {
             sock = new Socket(ipAddress, Integer.parseInt(port));
 
@@ -28,11 +37,11 @@ class Client extends Thread {
             in = new DataInputStream(sock.getInputStream());
             if (playerName.isEmpty()) {
                 this.playerName = "Huguette";
+                minesweeper.getGUIMineSweeper().getPseudo().setText(playerName);
             } else {
                 this.playerName = playerName;
             }
-            this.demineur = demineur;
-
+            this.minesweeper = minesweeper;
             this.start();
         } catch (IOException e) {
             System.out.println("The ip address " + ipAddress + ":" + port + " is unreachable");
@@ -45,13 +54,16 @@ class Client extends Thread {
         }
     }
 
+    /**
+     * This method handles the management of the server's instructions.
+     */
     @Override
     public void run() {
         try {
-            demineur.getIhmDemineur().createLog();
+            minesweeper.getGUIMineSweeper().createLog();
             out.writeUTF(playerName);
             playerNum = in.readInt();
-            demineur.getIhmDemineur().displayID();
+            minesweeper.getGUIMineSweeper().displayID();
 
             while (this != null) {
                 String instruction = in.readUTF();
@@ -64,9 +76,9 @@ class Client extends Thread {
                         started = true;
                         date = arrayInstruction[1];
                         String difficulty = arrayInstruction[2];
-                        demineur.getIhmDemineur().appendToPane(date + " - Game started !\nDifficulty: " + difficulty + "\n", Color.black, true);
-                        demineur.getChamp().setBoard(Level.valueOf(difficulty));
-                        demineur.getIhmDemineur().newGame(Level.valueOf(difficulty));
+                        minesweeper.getGUIMineSweeper().appendToPane(date + " - Game started !\nDifficulty: " + difficulty + "\n", Color.black, true);
+                        minesweeper.getField().setBoard(Level.valueOf(difficulty));
+                        minesweeper.getGUIMineSweeper().newGame(Level.valueOf(difficulty));
                         break;
                     case "eliminated":
                         date = arrayInstruction[1];
@@ -76,9 +88,9 @@ class Client extends Thread {
                         playerColor = arrayInstruction[5];
                         playerScore = arrayInstruction[6];
                         playerID = Integer.parseInt(arrayInstruction[7]);
-                        demineur.getIhmDemineur().appendToPane(date + " - " + playerName + " is eliminated ! He scored " + playerScore + " points\n", new Color(Integer.parseInt(playerColor)), true);
-                        demineur.getIhmDemineur().getTabCases()[x][y].clientRepaint(true, new Color(Integer.parseInt(playerColor)), 0);
-                        if (playerID == demineur.getClient().getPlayerNum()) {
+                        minesweeper.getGUIMineSweeper().appendToPane(date + " - " + playerName + " is eliminated ! He scored " + playerScore + " points\n", new Color(Integer.parseInt(playerColor)), true);
+                        minesweeper.getGUIMineSweeper().getTabCells()[x][y].clientRepaint(true, new Color(Integer.parseInt(playerColor)), 0);
+                        if (playerID == minesweeper.getClient().getPlayerNum()) {
                             if (JOptionPane.showConfirmDialog(
                                     null,
                                     "Game is over. You scored " + playerScore + " points\nDo you want to wait the next game?",
@@ -98,33 +110,33 @@ class Client extends Thread {
                         x = Integer.parseInt(arrayInstruction[2]);
                         y = Integer.parseInt(arrayInstruction[3]);
                         playerColor = arrayInstruction[4];
-                        demineur.getIhmDemineur().getTabCases()[x][y].clientRepaint(false, new Color(Integer.parseInt(playerColor)), nbMines);
+                        minesweeper.getGUIMineSweeper().getTabCells()[x][y].clientRepaint(false, new Color(Integer.parseInt(playerColor)), nbMines);
                         break;
                     case "pause":
                         date = arrayInstruction[1];
                         JOptionPane.showConfirmDialog(
                                 null,
-                                "Game has been paused.",
+                                "Game has been paused by an administrator",
                                 "Pause",
                                 JOptionPane.DEFAULT_OPTION
                         );
-                        demineur.getIhmDemineur().appendToPane(date + " - Game has been paused\n", Color.black, true);
+                        minesweeper.getGUIMineSweeper().appendToPane(date + " - Game has been paused\n", Color.black, true);
                         break;
                     case "resume":
                         date = arrayInstruction[1];
-                        demineur.getIhmDemineur().appendToPane(date + " - Game has been resumed! Be fast to collect points!\n", Color.black, true);
+                        minesweeper.getGUIMineSweeper().appendToPane(date + " - Game has been resumed! Be fast to collect points!\n", Color.black, true);
                         break;
                     case "left":
                         date = arrayInstruction[1];
                         playerName = arrayInstruction[2];
-                        demineur.getIhmDemineur().appendToPane(date + " - " + playerName + " has left the game!\n", Color.black, true);
+                        minesweeper.getGUIMineSweeper().appendToPane(date + " - " + playerName + " has left the game!\n", Color.black, true);
                         break;
                     case "end":
                         if (!replaying) {
                             if (JOptionPane.showConfirmDialog(
                                     null,
-                                    "Game is over. Do you want to start over ?",
-                                    "Game is finished !",
+                                    "Game is over. Do you want to play again ?",
+                                    "Game is over !",
                                     JOptionPane.YES_NO_OPTION
                             ) == JOptionPane.YES_OPTION) {
                                 out.writeUTF("new true");
@@ -135,22 +147,24 @@ class Client extends Thread {
                     case "message":
                         date = arrayInstruction[1];
                         playerColor = arrayInstruction[2];
+                        playerName = arrayInstruction[3];
                         StringBuilder message = new StringBuilder();
                         message.append(date);
                         message.append(" - ");
-                        for (int i = 3; i < arrayInstruction.length; i++) {
+                        message.append(playerName).append(": ");
+                        for (int i = 4; i < arrayInstruction.length; i++) {
                             message.append(arrayInstruction[i]).append(" ");
                         }
                         message.append("\n");
-                        demineur.getIhmDemineur().appendToPane(message.toString(), new Color(Integer.parseInt(playerColor)), false);
+                        minesweeper.getGUIMineSweeper().appendToPane(message.toString(), new Color(Integer.parseInt(playerColor)), false);
                         break;
                     default:
-                        demineur.getIhmDemineur().appendToPane(instruction, Color.black, true);
+                        minesweeper.getGUIMineSweeper().appendToPane(instruction, Color.black, true);
                 }
             }
 
         } catch (IOException e) {
-            demineur.getIhmDemineur().appendToPane("Connexion lost ...\n", Color.red, true);
+            minesweeper.getGUIMineSweeper().appendToPane("Connexion lost ...\n", Color.red, true);
             int choice = JOptionPane.showConfirmDialog(
                     null,
                     "You have lost your connection with the server! Do you want to play in solo mode ?",
@@ -162,22 +176,9 @@ class Client extends Thread {
         }
     }
 
-    int getPlayerNum() {
-        return playerNum;
-    }
-
-    String getPlayerName() {
-        return playerName;
-    }
-
-    DataOutputStream getOut() {
-        return out;
-    }
-
-    boolean isStarted() {
-        return started;
-    }
-
+    /**
+     * Closes the thread and starts a new game.
+     */
     private void close() {
         try {
             in.close();
@@ -186,18 +187,48 @@ class Client extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        demineur.getChamp().setBoard(Level.Easy);
-        demineur.getIhmDemineur().newGame(Level.Easy);
-        demineur.getIhmDemineur().getChat().setEnabled(false);
-        demineur.getIhmDemineur().getSendChat().setEnabled(false);
-        demineur.setClient(null);
+        minesweeper.setClient(null);
+        minesweeper.getField().setBoard(Level.Easy);
+        minesweeper.getGUIMineSweeper().newGame(Level.Easy);
+        minesweeper.getGUIMineSweeper().disableOnlineDisplay();
     }
 
+    /**
+     * @param message message to be sent to the server.
+     */
     void sendMessage(String message) {
         try {
             out.writeUTF("message " + message);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * @return the ID of the player stocked in this class.
+     */
+    int getPlayerNum() {
+        return playerNum;
+    }
+
+    /**
+     * @return returns the name of the player.
+     */
+    String getPlayerName() {
+        return playerName;
+    }
+
+    /**
+     * @return the DataOutputStream linked to this thread.
+     */
+    DataOutputStream getOut() {
+        return out;
+    }
+
+    /**
+     * @return whether or not the game has started.
+     */
+    boolean isStarted() {
+        return started;
     }
 }

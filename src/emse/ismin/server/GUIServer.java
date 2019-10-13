@@ -6,10 +6,15 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-public class IHMServer extends JFrame implements ActionListener {
+/**
+ * This class manages the display of the server, and also the interactions with the user-administrator.
+ */
+public class GUIServer extends JFrame implements ActionListener {
 
     private JLabel portLabel = new JLabel("Port:");
     private JTextField port = new JTextField("10000");
@@ -24,7 +29,10 @@ public class IHMServer extends JFrame implements ActionListener {
     private boolean gameStarted = false;
     private Server server;
 
-    private IHMServer() {
+    /**
+     * Create and displays a new GUI linked to a Server class.
+     */
+    private GUIServer() {
         super("Minesweeper server");
         setLayout(new BorderLayout());
 
@@ -41,10 +49,19 @@ public class IHMServer extends JFrame implements ActionListener {
         pack();
     }
 
+    /**
+     * Starts the server.
+     *
+     * @param args unused
+     */
     public static void main(String[] args) {
-        IHMServer ihmServer = new IHMServer();
+        GUIServer GUIServer = new GUIServer();
     }
 
+    /**
+     * @return a JPanel which contains all the buttons and the text zones for the setup of a server on a specific IP
+     * and port.
+     */
     private JPanel createFooter() {
         JPanel footer = new JPanel();
         footer.setLayout(new FlowLayout());
@@ -61,6 +78,11 @@ public class IHMServer extends JFrame implements ActionListener {
         return footer;
     }
 
+    /**
+     * Handles all the performed actions by the user-admin on the graphic interface.
+     *
+     * @param e event
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == launch && launch.getText().equals("Launch")) {
@@ -76,6 +98,16 @@ public class IHMServer extends JFrame implements ActionListener {
             pack();
             server = new Server(portNumber, this);
             server.start();
+            addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent event) {
+                    if (JOptionPane.showConfirmDialog(
+                            null,
+                            "Are you sure?",
+                            "Quit",
+                            JOptionPane.YES_NO_OPTION
+                    ) == JOptionPane.YES_OPTION) server.closeServer();
+                }
+            });
         } else if (e.getSource() == launch && launch.getText().equals("Start game")) {
             gameStarted = true;
             port.setEnabled(false);
@@ -95,21 +127,35 @@ public class IHMServer extends JFrame implements ActionListener {
             server.resumeGame();
             launch.setText("Pause game");
         } else if (e.getSource() == stop) {
-            gameStarted = false;
-            log.append(server.getDate() + " -  Game is finished ! Here are the overall scores:\n");
-            server.stopGame();
+            if (JOptionPane.showConfirmDialog(
+                    null,
+                    "Are you sure?",
+                    "Quit",
+                    JOptionPane.YES_NO_OPTION
+            ) == JOptionPane.YES_OPTION) {
+                gameStarted = false;
+                server.stopGame();
+            }
         }
-
     }
 
+    /**
+     * @return a String containing the level selected by the user.
+     */
     String getLevelBox() {
         return (String) levelBox.getSelectedItem();
     }
 
+    /**
+     * @return whether or not the game has started.
+     */
     boolean isGameStarted() {
         return gameStarted;
     }
 
+    /**
+     * @return the log interface of the GUI.
+     */
     JTextArea getLog() {
         return log;
     }

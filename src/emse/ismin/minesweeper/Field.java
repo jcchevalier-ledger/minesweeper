@@ -5,15 +5,12 @@ import emse.ismin.Level;
 import java.util.Random;
 
 /**
- * @author jean-christophe
- * @version 1.0
- * <p>
  * This classes contains methods and variables that describes the champ. It contains 2 variables:
  * - boolean[][] board : a squared board. The case value is "true" if it contains a mine, "false" if it does not.
  * - int numberOfMines : specify the number of mines inside that champ.
  */
 
-public class Champ {
+public class Field {
 
     private int numberOfMines;
     private boolean[][] board;
@@ -22,37 +19,26 @@ public class Champ {
     /**
      * Default constructor, only used to create an empty instance of the class
      */
-    private Champ() {
+    private Field() {
     }
 
     /**
      * @param numberOfMines the number of mines that you want
      * @param boardSize     the size of the side of the board
      */
-    Champ(int numberOfMines, int boardSize) {
+    Field(int numberOfMines, int boardSize) {
         this.numberOfMines = numberOfMines;
         this.board = new boolean[boardSize][boardSize];
     }
 
     /**
-     * Creates a new emse.ismin.minesweeper.Champ instance in function of the difficulty
+     * Creates a new Champ instance in function of the difficulty
      *
      * @param level the difficulty of the game
      */
-    public Champ(Level level) {
+    public Field(Level level) {
         this();
-        if (level == Level.Easy) {
-            setChamp(1, 3);
-            this.level = level;
-        }
-        if (level == Level.Medium) {
-            setChamp(30, 8);
-            this.level = level;
-        }
-        if (level == Level.Hard) {
-            setChamp(60, 10);
-            this.level = level;
-        }
+        setBoard(level);
     }
 
     /**
@@ -122,32 +108,54 @@ public class Champ {
         return "";
     }
 
+    /**
+     * @param x the x-coordinate of the case
+     * @param y the y-coordinate of the case
+     * @return a String, which is "Mine" if the case clicked-on is a mine or the number of mines around if not.
+     */
     String display(int x, int y) {
         if (board[x][y]) return "Mine";
         else return minesAround(x, y);
     }
 
+    /**
+     * @return the board of the Champ
+     */
     public boolean[][] getBoard() {
         return board;
     }
 
+    /**
+     * This method is a Board setter, in function of the level.
+     *
+     * @param level the level of the game. It can be:
+     *              - Easy
+     *              - Medium
+     *              - Hard
+     */
     void setBoard(Level level) {
         if (level == Level.Easy) {
             this.level = Level.Easy;
-            setChamp(1, 3);
+            setChamp(2, 5);
         } else if (level == Level.Medium) {
             this.level = Level.Medium;
-            setChamp(30, 8);
+            setChamp(15, 8);
         } else {
             this.level = Level.Hard;
-            setChamp(60, 10);
+            setChamp(30, 10);
         }
     }
 
+    /**
+     * @return the number of mines in this champ.
+     */
     public int getNumberOfMines() {
         return numberOfMines;
     }
 
+    /**
+     * @return the actual level of the game.
+     */
     Level getLevel() {
         return level;
     }
