@@ -24,7 +24,6 @@ class Server extends Thread {
     private int clientID = 0;
     private HashSet<ClientThread> clientList = new HashSet<>();
     private DateFormat dateFormat = new SimpleDateFormat("HH:mm");
-    private String date;
     private boolean isPaused;
 
     private Champ champ;
@@ -98,7 +97,7 @@ class Server extends Thread {
         for (ClientThread clientThread : clientList) {
             try {
                 clientThread.getOut().writeUTF(msg);
-            } catch (IOException ignored) {
+            } catch (IOException | NullPointerException ignored) {
             }
         }
     }
@@ -192,7 +191,7 @@ class Server extends Thread {
     }
 
     String getDate() {
-        date = dateFormat.format(Calendar.getInstance().getTime());
+        String date = dateFormat.format(Calendar.getInstance().getTime());
         date = "[" + date + "]";
         return date;
     }
@@ -269,14 +268,24 @@ class ClientThread extends Thread {
                             server.stopThread(clientID);
                         }
                         break;
+                    case "message":
+                        StringBuilder message = new StringBuilder();
+                        message.append("message ");
+                        message.append(server.getDate()).append(" ");
+                        message.append(playerColor.getRGB()).append(" ");
+                        for (int i = 1; i < arrayInstruction.length; i++) {
+                            message.append(arrayInstruction[i]).append(" ");
+                        }
+                        server.broadcastMessage(message.toString());
+                        break;
                 }
             }
         } catch (EOFException e) {
             server.stopThread(clientID);
             server.broadcastMessage("left" + " " + server.getDate() + " " + playerName);
+        } catch (NullPointerException ignored) {
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (NullPointerException ignored) {
         }
     }
 

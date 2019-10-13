@@ -34,7 +34,6 @@ class Client extends Thread {
             this.demineur = demineur;
 
             this.start();
-            demineur.getIhmDemineur().createLog();
         } catch (IOException e) {
             System.out.println("The ip address " + ipAddress + ":" + port + " is unreachable");
             JOptionPane.showConfirmDialog(
@@ -49,6 +48,7 @@ class Client extends Thread {
     @Override
     public void run() {
         try {
+            demineur.getIhmDemineur().createLog();
             out.writeUTF(playerName);
             playerNum = in.readInt();
             demineur.getIhmDemineur().displayID();
@@ -64,9 +64,9 @@ class Client extends Thread {
                         started = true;
                         date = arrayInstruction[1];
                         String difficulty = arrayInstruction[2];
-                        demineur.getIhmDemineur().getLog().append(date + " - Game started !\nDifficulty: " + difficulty + "\n");
+                        demineur.getIhmDemineur().appendToPane(date + " - Game started !\nDifficulty: " + difficulty + "\n", Color.black, true);
                         demineur.getChamp().setBoard(Level.valueOf(difficulty));
-                        demineur.getIhmDemineur().newPartie(Level.valueOf(difficulty));
+                        demineur.getIhmDemineur().newGame(Level.valueOf(difficulty));
                         break;
                     case "eliminated":
                         date = arrayInstruction[1];
@@ -76,7 +76,7 @@ class Client extends Thread {
                         playerColor = arrayInstruction[5];
                         playerScore = arrayInstruction[6];
                         playerID = Integer.parseInt(arrayInstruction[7]);
-                        demineur.getIhmDemineur().getLog().append(date + " - " + playerName + " is eliminated ! He scored " + playerScore + " points\n");
+                        demineur.getIhmDemineur().appendToPane(date + " - " + playerName + " is eliminated ! He scored " + playerScore + " points\n", new Color(Integer.parseInt(playerColor)), true);
                         demineur.getIhmDemineur().getTabCases()[x][y].clientRepaint(true, new Color(Integer.parseInt(playerColor)), 0);
                         if (playerID == demineur.getClient().getPlayerNum()) {
                             if (JOptionPane.showConfirmDialog(
@@ -88,7 +88,7 @@ class Client extends Thread {
                                 out.writeUTF("new false");
                                 demineur.setClient(null);
                                 demineur.getChamp().setBoard(Level.Easy);
-                                demineur.getIhmDemineur().newPartie(Level.Easy);
+                                demineur.getIhmDemineur().newGame(Level.Easy);
                             } else {
                                 out.writeUTF("new true");
                                 replaying = true;
@@ -110,16 +110,16 @@ class Client extends Thread {
                                 "Pause",
                                 JOptionPane.DEFAULT_OPTION
                         );
-                        demineur.getIhmDemineur().getLog().append(date + " - Game has been paused\n");
+                        demineur.getIhmDemineur().appendToPane(date + " - Game has been paused\n", Color.black, true);
                         break;
                     case "resume":
                         date = arrayInstruction[1];
-                        demineur.getIhmDemineur().getLog().append(date + " - Game has been resumed! Be fast to collect points!\n");
+                        demineur.getIhmDemineur().appendToPane(date + " - Game has been resumed! Be fast to collect points!\n", Color.black, true);
                         break;
                     case "left":
                         date = arrayInstruction[1];
                         playerName = arrayInstruction[2];
-                        demineur.getIhmDemineur().getLog().append(date + " - " + playerName + " has left the game!\n");
+                        demineur.getIhmDemineur().appendToPane(date + " - " + playerName + " has left the game!\n", Color.black, true);
                         break;
                     case "end":
                         if (!replaying) {
@@ -134,13 +134,25 @@ class Client extends Thread {
                             }
                         }
                         break;
+                    case "message":
+                        date = arrayInstruction[1];
+                        playerColor = arrayInstruction[2];
+                        StringBuilder message = new StringBuilder();
+                        message.append(date);
+                        message.append(" - ");
+                        for (int i = 3; i < arrayInstruction.length; i++) {
+                            message.append(arrayInstruction[i]).append(" ");
+                        }
+                        message.append("\n");
+                        demineur.getIhmDemineur().appendToPane(message.toString(), new Color(Integer.parseInt(playerColor)), false);
+                        break;
                     default:
-                        demineur.getIhmDemineur().getLog().append(instruction);
+                        demineur.getIhmDemineur().appendToPane(instruction, Color.black, true);
                 }
             }
 
         } catch (IOException e) {
-            System.out.println("Cannot reach server");
+            demineur.getIhmDemineur().appendToPane("Connexion lost ...\n", Color.red, true);
         }
     }
 
@@ -164,5 +176,13 @@ class Client extends Thread {
         in.close();
         out.close();
         sock.close();
+    }
+
+    void sendMessage(String message) {
+        try {
+            out.writeUTF("message " + message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

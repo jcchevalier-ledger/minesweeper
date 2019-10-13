@@ -91,7 +91,7 @@ public class Case extends JPanel implements MouseListener {
                         "Handsome fellow !!!",
                         JOptionPane.YES_NO_OPTION
                 ) == JOptionPane.YES_OPTION) {
-                    demineur.getIhmDemineur().newPartie();
+                    demineur.getIhmDemineur().newGame();
                 }
             }
         }
@@ -118,7 +118,7 @@ public class Case extends JPanel implements MouseListener {
                             "Defeat",
                             JOptionPane.YES_NO_OPTION
                     ) == JOptionPane.YES_OPTION) {
-                        demineur.getIhmDemineur().newPartie();
+                        demineur.getIhmDemineur().newGame();
                     }
                 }
             }

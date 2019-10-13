@@ -3,6 +3,11 @@ package emse.ismin.minesweeper;
 import emse.ismin.Level;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -24,7 +29,9 @@ public class IHMDemineur extends JPanel implements ActionListener {
     private JMenuItem mRestart = new JMenuItem("Restart");
     private Compteur compteur = new Compteur(150, 30);
 
-    private JTextArea log = new JTextArea("Welcome to the Minesweeper\n", 10, 20);
+    private JTextPane log = new JTextPane();
+    private JTextArea chat = new JTextArea(1, 20);
+    private JButton sendChat = new JButton("Send");
 
     private JButton join;
     private JTextField ipAddress;
@@ -140,14 +147,30 @@ public class IHMDemineur extends JPanel implements ActionListener {
     }
 
     void createLog() {
+        JPanel logPanel = new JPanel();
+        JPanel chatBar = new JPanel();
+        logPanel.setLayout(new BoxLayout(logPanel, BoxLayout.Y_AXIS));
+
         log.setEditable(false);
         JScrollPane jScrollPane = new JScrollPane(log);
-        jScrollPane.getVerticalScrollBar().addAdjustmentListener(e -> e.getAdjustable().setValue(e.getAdjustable().getMaximum()));
+        EmptyBorder emptyBorder = new EmptyBorder(new Insets(10, 10, 10, 10));
+        jScrollPane.setBorder(emptyBorder);
+        log.setText("Welcome to the online version of the MineSweeper !\n");
 
-        add(jScrollPane, BorderLayout.EAST);
+        chatBar.add(chat);
+        chatBar.add(sendChat);
+        sendChat.addActionListener(this);
+        sendChat.setMnemonic(KeyEvent.VK_ENTER);
+
+        logPanel.add(jScrollPane);
+        logPanel.add(chatBar);
+
+        add(logPanel, BorderLayout.EAST);
+        demineur.pack();
+        setVisible(true);
     }
 
-    void newPartie() {
+    void newGame() {
         if (demineur.getClient() == null) {
             demineur.getChamp().placeMines();
         }
@@ -160,44 +183,42 @@ public class IHMDemineur extends JPanel implements ActionListener {
         demineur.setDiscoveredCases(0);
     }
 
-    void newPartie(Level level) {
+    void newGame(Level level) {
         grid.removeAll();
         createGrid();
         add(grid, BorderLayout.CENTER);
-        newPartie();
+        newGame();
         demineur.pack();
     }
 
     @Override
     public void actionPerformed(ActionEvent event) {
-        if (event.getSource() == mQuitter) {
+        Object source = event.getSource();
+        if (mQuitter.equals(source)) {
             if (JOptionPane.showConfirmDialog(
                     null,
                     "Are you sure?",
                     "Quit",
                     JOptionPane.YES_NO_OPTION
             ) == JOptionPane.YES_OPTION) demineur.quit();
-        }
-        if (event.getSource() == mEasy) {
+        } else if (mEasy.equals(source)) {
             demineur.getChamp().setBoard(Level.Easy);
-            newPartie(Level.Easy);
-        }
-        if (event.getSource() == mMedium) {
+            newGame(Level.Easy);
+        } else if (mMedium.equals(source)) {
             demineur.getChamp().setBoard(Level.Medium);
-            newPartie(Level.Medium);
-        }
-        if (event.getSource() == mHard) {
+            newGame(Level.Medium);
+        } else if (mHard.equals(source)) {
             demineur.getChamp().setBoard(Level.Hard);
-            newPartie(Level.Hard);
-        }
-        if (event.getSource() == mRestart) {
-            newPartie();
-        }
-        if (event.getSource() == grid) {
+            newGame(Level.Hard);
+        } else if (mRestart.equals(source)) {
+            newGame();
+        } else if (grid.equals(source)) {
             compteur.start();
-        }
-        if (event.getSource() == join) {
+        } else if (join.equals(source)) {
             demineur.setClient(new Client(ipAddress.getText(), port.getText(), pseudo.getText(), demineur));
+        } else if (sendChat.equals(source)) {
+            String message = this.chat.getText();
+            demineur.getClient().sendMessage(message);
         }
     }
 
@@ -214,6 +235,22 @@ public class IHMDemineur extends JPanel implements ActionListener {
         pseudo.setEnabled(false);
     }
 
+    void appendToPane(String msg, Color color, boolean isAdmin) {
+        StyledDocument styledDocument = log.getStyledDocument();
+
+        SimpleAttributeSet attributeSet = new SimpleAttributeSet();
+        StyleConstants.setForeground(attributeSet, color);
+        StyleConstants.setBold(attributeSet, isAdmin);
+        log.setCharacterAttributes(attributeSet, false);
+        log.setCaretPosition(log.getText().length());
+
+        try {
+            styledDocument.insertString(styledDocument.getLength(), msg, attributeSet);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }
+
     void blockGame() {
         for (Case[] tabCase : tabCases) {
             for (int j = 0; j < tabCases.length; j++) {
@@ -225,10 +262,6 @@ public class IHMDemineur extends JPanel implements ActionListener {
 
     Compteur getCompteur() {
         return compteur;
-    }
-
-    JTextArea getLog() {
-        return log;
     }
 
     Case[][] getTabCases() {
