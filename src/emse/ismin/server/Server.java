@@ -198,6 +198,10 @@ class Server extends Thread {
         int totalScore = 0;
         int numberOfCases = getClicked().length * getClicked().length - getField().getNumberOfMines();
 
+        for (ClientThread clientThread : clientList) {
+            totalScore += clientThread.getScore();
+        }
+
         if (totalScore == numberOfCases) {
             broadcastMessage("end");
             resetAllScores();
