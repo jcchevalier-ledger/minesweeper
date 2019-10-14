@@ -311,7 +311,6 @@ class ClientThread extends Thread {
             while (this != null) {
                 String instruction = in.readUTF();
                 String[] arrayInstruction = instruction.split("\\s+");
-                System.out.println(instruction);
                 switch (arrayInstruction[0]) {
                     case "click":
                         int x = Integer.parseInt(arrayInstruction[1]);
